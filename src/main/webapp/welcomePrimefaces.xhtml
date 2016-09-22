@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <f:view contentType="text/html">
+        <h:head>
+            <f:facet name="first">
+                <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                <title>PrimeFaces</title>
+            </f:facet>
+        </h:head>
+
+        <h:body>
+
+            <p:layout fullPage="true">
+
+                <p:layoutUnit position="north" size="100" resizable="true" closable="true" collapsible="true">
+                    Header
+                </p:layoutUnit>
+
+                <p:layoutUnit position="south" size="100" closable="true" collapsible="true">
+                    Footer
+                </p:layoutUnit>
+
+                <p:layoutUnit position="west" size="175" header="Left" collapsible="true">
+                    <p:menu>
+                        <p:submenu label="Resources">
+                            <p:menuitem value="Demo" url="http://www.primefaces.org/showcase-labs/ui/home.jsf" />
+                            <p:menuitem value="Documentation" url="http://www.primefaces.org/documentation.html" />
+                            <p:menuitem value="Forum" url="http://forum.primefaces.org/" />
+                            <p:menuitem value="Themes" url="http://www.primefaces.org/themes.html" />
+
+                        </p:submenu>
+
+                    </p:menu>
+                </p:layoutUnit>
+
+                <p:layoutUnit position="center">
+                    Welcome to PrimeFaces
+                    <h:form>              
+                        <p:growl id="messages" showDetail="true"/>
+
+                        <h3>Write your text</h3>
+<!--                        <p:inputTextarea rows="6" cols="33" id="iatext"/>-->
+                        <br />
+                        <p:inputTextarea onselect="setSelectedText()" rows="6" value="Lorem ipsum dolor sit amet consectetur adipisicing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident sunt in 
+                                         culpa qui officia deserunt mollit anim id est laborum" style="width: 100%;" >        
+                        </p:inputTextarea>           
+                        <p:remoteCommand name="setSelectedTextCommand" 
+                                         actionListener="#{mainBean.setSelectedText()}"
+                                         update="currentSelectedText" />
+                        Selected Text is: 
+                        <h:outputText value="#{mainBean.selectedTextInArea}" 
+                                      id="currentSelectedText" />
+
+                        <h:outputScript library="js" name="jquery.flexibleArea.js" />
+<!--                        <h:outputScript library="js" name="jquery-textrange.js" />-->
+                        <script src="#{resource['jquery-textrange.js']}" />
+                        <script>
+                            function setSelectedText() {
+                                var range = $('.ui-inputtextarea').textrange();// general selector
+                                setSelectedTextCommand([{name: 'selectedText', value: range.text}]);
+                            }
+                        </script>
+
+                        <p:contextMenu >
+                            <p:menuitem value="Save" actionListener="#{menuView.save}" update="messages" icon="ui-icon-disk"/>
+                            <p:menuitem value="Update" actionListener="#{menuView.update}" update="messages" icon="ui-icon-arrowrefresh-1-w"/>
+                            <p:menuitem value="Delete" actionListener="#{menuView.delete}" ajax="false" icon="ui-icon-close"/>
+                            <p:menuitem value="Homepage" url="http://www.primefaces.org" icon="ui-icon-extlink"/>
+                        </p:contextMenu>
+                    </h:form>
+                </p:layoutUnit>
+
+            </p:layout>
+
+        </h:body>
+
+    </f:view>
+</html>
+
