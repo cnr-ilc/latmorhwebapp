@@ -62,7 +62,7 @@
                     </p:inputTextarea>           
                     <p:remoteCommand name="setSelectedTextCommand" 
                                      actionListener="#{searchPanelBean.setSelectedText()}"
-                                     onstart="PF('loadingDialog').show()" oncomplete="PF('loadingDialog').hide();"
+
                                      />
 
                     <!--                                     update="currentSelectedText" />-->
@@ -77,10 +77,13 @@
 
                         </p:selectManyCheckbox>
                     </h:panelGrid>
-                    <h:panelGrid columns="2" cellpadding="1" border="0" id="currentAnalysis">
-                                 <h:outputLabel for="nf" value="Number of Forms" /> <h:outputText value="#{contextMenuView.numForm}" id="nf"/>
-                                 <h:outputLabel for="ndf" value="Number of Distinct Forms" /> <h:outputText value="#{contextMenuView.numDistinctForm}" id="ndf"/>
-                                 <h:outputLabel for="nl" value="Number of Lemmas" /> <h:outputText value="#{contextMenuView.numLemmas}" id="nl"/>
+                    <h:panelGrid columns="2" cellpadding="3" border="0" id="currentAnalysis" >
+                        <h:outputLabel for="nf" value="Number of Forms: "  /> <h:outputText value="#{contextMenuView.numForm}" id="nf"/>
+                        <h:outputLabel for="ndf" value="Number of Distinct Forms: " /> <h:outputText value="#{contextMenuView.numDistinctForm}" id="ndf"/>
+                        <h:outputLabel for="nl" value="Number of  Lemmas: " /> <h:outputText value="#{contextMenuView.numLemmas}" id="nl"/>
+                        <h:outputLabel for="ndl" value="Number of Distinct Lemmas: "  /> <h:outputText value="#{contextMenuView.numGlobalLemmas}" id="ndl"/>
+                        <h:outputLabel for="fnf" value="Number of Forms Not Found: " /> <h:outputText value="#{contextMenuView.numFormNotFound}" id="fnf"/>
+                        <h:outputLabel for="lf" value="Number of Lemmatized Forms: "  /> <h:outputText value="#{contextMenuView.numLemmatizedForm}" id="lf"/>
                     </h:panelGrid>
 
                     <script src="#{resource['flexibleArea.js']}" />
@@ -111,11 +114,23 @@
 
                     </p:tree>
                 </h:panelGrid>
+
+                <h:panelGrid columns="1" cellpadding="2" style="width: 100%;" border="0">
+                    <p:tree value="#{contextMenuView.mainRootNotFound}" var="node" orientation="horizontal" id="nodepanelnf" >
+
+                        <p:treeNode>
+                            <h:outputText value="#{node}" />
+                        </p:treeNode>
+
+                    </p:tree>
+                </h:panelGrid>
                 <!--</p:fieldset>-->
 
 
                 <p:contextMenu for="textarea">
-                    <p:menuitem value="Lemmatize #{searchPanelBean.selectedTextInArea}" actionListener="#{contextMenuView.lemmatizeFormAndCreateResponse}"  icon="ui-icon-disk" update="nodepanel currentAnalysis"/>
+                    <p:menuitem value="Lemmatize #{searchPanelBean.selectedTextInArea}" 
+                                actionListener="#{contextMenuView.lemmatizeFormAndCreateResponse}"  
+                                icon="ui-icon-disk" update="nodepanel currentAnalysis nodepanelnf" onstart="PF('loadingDialog').show()" oncomplete="PF('loadingDialog').hide();"/>
 
                 </p:contextMenu>
             </h:form>

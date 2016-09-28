@@ -53,11 +53,17 @@ public class ContextMenuView implements Serializable {
     private String json;
     private TreeNode root;
     private TreeNode mainRoot;
+    private TreeNode mainRootNotFound;
+    private List<String> globallemmafound = new ArrayList<String>();
     private List<TreeNode> roots = new ArrayList<>();
     private HashMap<String, Integer> occhm = new HashMap<>();
     private int numForm = 0;
     private int numDistinctForm = 0;
     private int numLemmas = 0;
+    private int numGlobalLemmas = 0;
+    private int numFormNotFound = 0;
+    private int numLemmatizedForm = 0;
+    private List<String> formsNotFound = new ArrayList<>();
 
     /**
      * The typeOfAnalysis manages 3 check boxes to show the results in a bitmap
@@ -130,14 +136,16 @@ public class ContextMenuView implements Serializable {
         setRoots(nodes);
 
         setMainRoot(createListOfNodes(nodes));
-        System.err.println("MAP " + occhm);
+        //System.err.println("MAP " + occhm);
+        System.err.println("GLOBAL " + globallemmafound);
+        setMainRootNotFound(createListOfNodesForNotFound(nodes));
 
     }
 
     private String cleanWord(String word) {
-        System.err.println("word0 " + word);
+        //System.err.println("word0 " + word);
         word = word.replaceAll("[,.;?!]", "");//.replaceAll(";", "").replaceAll(".", "");
-        System.err.println("word1 " + word);
+        //System.err.println("word1 " + word);
         return word;
     }
 
@@ -154,6 +162,19 @@ public class ContextMenuView implements Serializable {
         }
         getMainRoot().getChildren().addAll(nodes);
         return getMainRoot();
+
+    }
+
+    private TreeNode createListOfNodesForNotFound(List<TreeNode> nodes) {
+
+        if (getMainRootNotFound() == null) {
+            setMainRootNotFound(new DefaultTreeNode("  Forms Not Found (" + numFormNotFound + ")"));
+        }
+        for (String a : formsNotFound) {
+            getMainRootNotFound().getChildren().add(new DefaultTreeNode(a, getMainRootNotFound()));
+        }
+
+        return getMainRootNotFound();
 
     }
 
@@ -180,11 +201,17 @@ public class ContextMenuView implements Serializable {
 
         if (typeOfAnalysis == 1) {
             /*add a node to show the morphoanalysis*/
-            root.getChildren().add(createMorphoAnalysisForForm(obj, false));
+            try {
+                root.getChildren().add(createMorphoAnalysisForForm(obj, false));
+            } catch (Exception e) {
+            }
         }
 
         if (typeOfAnalysis == 2) /*add a node for lemmas*/ {
-            root.getChildren().add(createListOfLemmas(obj));
+            try {
+                root.getChildren().add(createListOfLemmas(obj));
+            } catch (Exception e) {
+            }
         }
 
         if (typeOfAnalysis == 3) /*add a node to show the morphoanalysis*/ {
@@ -194,7 +221,10 @@ public class ContextMenuView implements Serializable {
         }
         if (typeOfAnalysis == 4) {
             /*complete analysis*/
-            root.getChildren().add(createCompleteTree(obj));
+            try {
+                root.getChildren().add(createCompleteTree(obj));
+            } catch (Exception e) {
+            }
 
         }
 
@@ -241,12 +271,14 @@ public class ContextMenuView implements Serializable {
     private TreeNode createMorphoAnalysisForForm(JsonObject obj, boolean complete) {
         String labelAnalysis = "analyses";
         String labelMorfCodes = "morpho_codes";
+        String labelInForm = "input_wordform";
         String labelLemmas = "lemmas";
         String labelLemma = "lemma";
         String labelValues = "values";
         String labelLemType = "lem_type";
         String labelPos = "PoS";
         String __ANALISYS__ = "Analysis: ";
+        String labelFound = "found";
         String __FORMANALISYS__ = "Form Analysis";
         String __FORMMORPHANALISYS__ = "Morphological Analysis: ";
         String __CASO__ = "Caso";
@@ -288,188 +320,197 @@ public class ContextMenuView implements Serializable {
             __FORMANALISYS__ = "Form Analysis";
         }
         JsonArray analyses = obj.getJsonArray(labelAnalysis);
-        if (node == null) {
+        if (obj.getString(labelFound).equals("true")) {
+            if (node == null) {
 
-            node = new DefaultTreeNode(__FORMANALISYS__);
+                node = new DefaultTreeNode(__FORMANALISYS__);
 
-            for (JsonValue analysis : analyses) {
-                mc = 0;
-                j = 0;
-                TreeNode nodeanalysis = new DefaultTreeNode(__ANALISYS__ + (i + 1), node);
-                JsonObject objAnalysis = analyses.getJsonObject(i);
-                JsonArray formcodes = objAnalysis.getJsonArray(labelMorfCodes);
-                for (JsonValue formcode : formcodes) {
-                    TreeNode temp = new DefaultTreeNode();
-                    thereIsCaseOrGenreOrNumber = false;
-                    __CASOVALUE__ = "";
-                    __GENEREVALUE__ = "";
-                    __NUMEROVALUE__ = "";
-                    __MODOVERBALEVALUE__ = "";
-                    __TEMPOVERBALEVALUE__ = "";
-                    __PERSONAVALUE__ = "";
-
-                    formmorphoanalysis = "";
-                    JsonObject objFormCode = formcodes.getJsonObject(mc);
-                    try {
-                        __CASOVALUE__ = objFormCode.getString(__CASO__);
-                        __CASOVALUE__ = __CASO__ + ": " + __CASOVALUE__;
-                        thereIsCaseOrGenreOrNumber = true;
-                    } catch (Exception e) {
+                for (JsonValue analysis : analyses) {
+                    mc = 0;
+                    j = 0;
+                    TreeNode nodeanalysis = new DefaultTreeNode(__ANALISYS__ + (i + 1), node);
+                    JsonObject objAnalysis = analyses.getJsonObject(i);
+                    JsonArray formcodes = objAnalysis.getJsonArray(labelMorfCodes);
+                    for (JsonValue formcode : formcodes) {
+                        TreeNode temp = new DefaultTreeNode();
+                        thereIsCaseOrGenreOrNumber = false;
                         __CASOVALUE__ = "";
-                    }
-                    try {
-                        __GENEREVALUE__ = objFormCode.getString(__GENERE__);
-                        __GENEREVALUE__ = __GENERE__ + ": " + __GENEREVALUE__;
-                        thereIsCaseOrGenreOrNumber = true;
-                    } catch (Exception e) {
                         __GENEREVALUE__ = "";
-                    }
-                    try {
-                        __NUMEROVALUE__ = objFormCode.getString(__NUMERO__);
-                        __NUMEROVALUE__ = __NUMERO__ + ": " + __NUMEROVALUE__;
-                        thereIsCaseOrGenreOrNumber = true;
-                    } catch (Exception e) {
                         __NUMEROVALUE__ = "";
-                    }
-
-                    try {
-                        __MODOVERBALEVALUE__ = objFormCode.getString(__MODOVERBALE__);
-                        __MODOVERBALEVALUE__ = __MODOVERBALE__ + ": " + __MODOVERBALEVALUE__;
-                        thereIsCaseOrGenreOrNumber = true;
-                    } catch (Exception e) {
                         __MODOVERBALEVALUE__ = "";
-                    }
-                    try {
-                        __TEMPOVERBALEVALUE__ = objFormCode.getString(__TEMPOVERBALE__);
-                        __TEMPOVERBALEVALUE__ = __TEMPOVERBALE__ + ": " + __TEMPOVERBALEVALUE__;
-                        thereIsCaseOrGenreOrNumber = true;
-                    } catch (Exception e) {
                         __TEMPOVERBALEVALUE__ = "";
-                    }
-                    try {
-                        __PERSONAVALUE__ = objFormCode.getString(__PERSONA__);
-                        __PERSONAVALUE__ = __PERSONA__ + ": " + __PERSONAVALUE__;
-                        thereIsCaseOrGenreOrNumber = true;
-                    } catch (Exception e) {
                         __PERSONAVALUE__ = "";
-                    }
-                    if (!__CASOVALUE__.equals("")) {
-                        formmorphoanalysis = formmorphoanalysis + "\n" + __CASOVALUE__;
-                    }
-                    if (!__GENEREVALUE__.equals("")) {
-                        formmorphoanalysis = formmorphoanalysis + "\n" + __GENEREVALUE__;
-                    }
-                    if (!__NUMEROVALUE__.equals("")) {
-                        formmorphoanalysis = formmorphoanalysis + "\n" + __NUMEROVALUE__;
+
+                        formmorphoanalysis = "";
+                        JsonObject objFormCode = formcodes.getJsonObject(mc);
+                        try {
+                            __CASOVALUE__ = objFormCode.getString(__CASO__);
+                            __CASOVALUE__ = __CASO__ + ": " + __CASOVALUE__;
+                            thereIsCaseOrGenreOrNumber = true;
+                        } catch (Exception e) {
+                            __CASOVALUE__ = "";
+                        }
+                        try {
+                            __GENEREVALUE__ = objFormCode.getString(__GENERE__);
+                            __GENEREVALUE__ = __GENERE__ + ": " + __GENEREVALUE__;
+                            thereIsCaseOrGenreOrNumber = true;
+                        } catch (Exception e) {
+                            __GENEREVALUE__ = "";
+                        }
+                        try {
+                            __NUMEROVALUE__ = objFormCode.getString(__NUMERO__);
+                            __NUMEROVALUE__ = __NUMERO__ + ": " + __NUMEROVALUE__;
+                            thereIsCaseOrGenreOrNumber = true;
+                        } catch (Exception e) {
+                            __NUMEROVALUE__ = "";
+                        }
+
+                        try {
+                            __MODOVERBALEVALUE__ = objFormCode.getString(__MODOVERBALE__);
+                            __MODOVERBALEVALUE__ = __MODOVERBALE__ + ": " + __MODOVERBALEVALUE__;
+                            thereIsCaseOrGenreOrNumber = true;
+                        } catch (Exception e) {
+                            __MODOVERBALEVALUE__ = "";
+                        }
+                        try {
+                            __TEMPOVERBALEVALUE__ = objFormCode.getString(__TEMPOVERBALE__);
+                            __TEMPOVERBALEVALUE__ = __TEMPOVERBALE__ + ": " + __TEMPOVERBALEVALUE__;
+                            thereIsCaseOrGenreOrNumber = true;
+                        } catch (Exception e) {
+                            __TEMPOVERBALEVALUE__ = "";
+                        }
+                        try {
+                            __PERSONAVALUE__ = objFormCode.getString(__PERSONA__);
+                            __PERSONAVALUE__ = __PERSONA__ + ": " + __PERSONAVALUE__;
+                            thereIsCaseOrGenreOrNumber = true;
+                        } catch (Exception e) {
+                            __PERSONAVALUE__ = "";
+                        }
+                        if (!__CASOVALUE__.equals("")) {
+                            formmorphoanalysis = formmorphoanalysis + "\n" + __CASOVALUE__;
+                        }
+                        if (!__GENEREVALUE__.equals("")) {
+                            formmorphoanalysis = formmorphoanalysis + "\n" + __GENEREVALUE__;
+                        }
+                        if (!__NUMEROVALUE__.equals("")) {
+                            formmorphoanalysis = formmorphoanalysis + "\n" + __NUMEROVALUE__;
+                        }
+
+                        if (!__MODOVERBALEVALUE__.equals("")) {
+                            formmorphoanalysis = formmorphoanalysis + "\n" + __MODOVERBALEVALUE__;
+                        }
+                        if (!__TEMPOVERBALEVALUE__.equals("")) {
+                            formmorphoanalysis = formmorphoanalysis + "\n" + __TEMPOVERBALEVALUE__;
+                        }
+                        if (!__PERSONAVALUE__.equals("")) {
+                            formmorphoanalysis = formmorphoanalysis + "\n" + __PERSONAVALUE__;
+                        }
+                        if (thereIsCaseOrGenreOrNumber) {
+                            //TreeNode fmaNode = new DefaultTreeNode(__FORMMORPHANALISYS__ + mc, nodeanalysis);
+                            temp = new DefaultTreeNode((i + 1) + "." + (mc + 1) + ") " + formmorphoanalysis, nodeanalysis);
+
+                            //nodeanalysis.getChildren().add(fmaNode);
+                        } else {
+                            temp = new DefaultTreeNode((i + 1) + "." + (mc + 1) + ") " + "No analysis available", nodeanalysis);
+                        }
+                        mc++;
                     }
 
-                    if (!__MODOVERBALEVALUE__.equals("")) {
-                        formmorphoanalysis = formmorphoanalysis + "\n" + __MODOVERBALEVALUE__;
-                    }
-                    if (!__TEMPOVERBALEVALUE__.equals("")) {
-                        formmorphoanalysis = formmorphoanalysis + "\n" + __TEMPOVERBALEVALUE__;
-                    }
-                    if (!__PERSONAVALUE__.equals("")) {
-                        formmorphoanalysis = formmorphoanalysis + "\n" + __PERSONAVALUE__;
-                    }
-                    if (thereIsCaseOrGenreOrNumber) {
-                        //TreeNode fmaNode = new DefaultTreeNode(__FORMMORPHANALISYS__ + mc, nodeanalysis);
-                        temp = new DefaultTreeNode((i + 1) + "." + (mc + 1) + ") " + formmorphoanalysis, nodeanalysis);
+                    /*manage lemmas if complete*/
+                    if (complete) {
+                        String __LEMMAS__ = "Lemma(s)";
 
-                        //nodeanalysis.getChildren().add(fmaNode);
-                    } else {
-                        temp = new DefaultTreeNode((i + 1) + "." + (mc + 1) + ") " + "No analysis available", nodeanalysis);
-                    }
-                    mc++;
-                }
-
-                /*manage lemmas if complete*/
-                if (complete) {
-                    String __LEMMAS__ = "Lemma(s)";
-
-                    //TreeNode node = null;
-                    String __LEMMA__ = "";
-                    String __LEMTYPE__ = "";
-                    JsonArray lemmas = objAnalysis.getJsonArray(labelLemmas);
-                    TreeNode temp = new DefaultTreeNode();
-                    TreeNode nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
-
-                    for (JsonValue lemma : lemmas) {
-                        __LEMMAS__ = "Lemma (";
-                        thereIsStuffInLemma = false;
-                        lemmamorphoanalysis = "";
+                        //TreeNode node = null;
+                        String __LEMMA__ = "";
+                        String __LEMTYPE__ = "";
+                        JsonArray lemmas = objAnalysis.getJsonArray(labelLemmas);
+                        TreeNode temp = new DefaultTreeNode();
+                        TreeNode nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
+                        lemmapos = "";
+                        for (JsonValue lemma : lemmas) {
+                            __LEMMAS__ = "Lemma (";
+                            thereIsStuffInLemma = false;
+                            lemmamorphoanalysis = "";
 //                        totLemmas = totLemmas + lemmas.size();
 //                        __LEMMAS__ = __LEMMAS__ + totLemmas + ") ";
+                            //nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
+                            JsonObject objLemmas = lemmas.getJsonObject(j);
+                            __LEMMA__ = objLemmas.getString(labelLemma);
+                            __LEMTYPE__ = objLemmas.getString(labelLemType);
+
+                            JsonArray codes = objLemmas.getJsonArray(labelMorfCodes);
+                            temp = new DefaultTreeNode(__LEMMA__ + " (" + __LEMTYPE__ + ") ", nodelemma);
+                            try {
+                                __CFVALUE__ = codes.getJsonObject(0).getString(__CF__);
+                                thereIsStuffInLemma = true;
+                            } catch (Exception e) {
+                                __CFVALUE__ = "";
+                                thereIsStuffInLemma = false;
+                            }
+
+                            try {
+                                __TYPEVALUE__ = codes.getJsonObject(0).getString(__TYPE__);
+                                thereIsStuffInLemma = true;
+                            } catch (Exception e) {
+                                __TYPEVALUE__ = "";
+                                thereIsStuffInLemma = false;
+                            }
+
+                            try {
+                                __VALUES__ = codes.getJsonObject(0).getString(labelValues);
+                                thereIsStuffInLemma = true;
+                            } catch (Exception e) {
+                                __VALUES__ = "";
+                                thereIsStuffInLemma = false;
+                            }
+
+                            try {
+                                PoS = codes.getJsonObject(0).getString(labelPos);
+                                thereIsStuffInLemma = true;
+                            } catch (Exception e) {
+                                PoS = "";
+                                thereIsStuffInLemma = false;
+                            }
+
+                            if (!__VALUES__.equals("")) {
+                                lemmamorphoanalysis = lemmamorphoanalysis + "\n" + __VALUES__;
+                            }
+
+                            if (!PoS.equals("")) {
+                                lemmamorphoanalysis = lemmamorphoanalysis + "\n" + PoS;
+                            }
+
+                            if (!__TYPEVALUE__.equals("")) {
+                                lemmamorphoanalysis = lemmamorphoanalysis + "\n" + __TYPEVALUE__;
+                            }
+
+                            if (!__CFVALUE__.equals("")) {
+                                lemmamorphoanalysis = lemmamorphoanalysis + "\n" + __CFVALUE__;
+                            }
+
+                            if (thereIsStuffInLemma) {
+                                TreeNode lemmacodes = new DefaultTreeNode(lemmamorphoanalysis, temp);
+                                lemmapos = __LEMMA__ + " (" + PoS + ") ";
+                                if (!globallemmafound.contains(lemmapos)) {
+                                    globallemmafound.add(lemmapos);
+                                }
+
+                            }
+
+                            j++;
+                        }
+
+                        nodeanalysis.getChildren().add(nodelemma);
+                        numLemmas = numLemmas + 1;
                         //nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
-                        JsonObject objLemmas = lemmas.getJsonObject(j);
-                        __LEMMA__ = objLemmas.getString(labelLemma);
-                        __LEMTYPE__ = objLemmas.getString(labelLemType);
-
-                        JsonArray codes = objLemmas.getJsonArray(labelMorfCodes);
-                        temp = new DefaultTreeNode(__LEMMA__ + " (" + __LEMTYPE__ + ") ", nodelemma);
-                        try {
-                            __CFVALUE__ = codes.getJsonObject(0).getString(__CFVALUE__);
-                            thereIsStuffInLemma = true;
-                        } catch (Exception e) {
-                            __CFVALUE__ = "";
-                            thereIsStuffInLemma = false;
-                        }
-
-                        try {
-                            __TYPEVALUE__ = codes.getJsonObject(0).getString(__TYPE__);
-                            thereIsStuffInLemma = true;
-                        } catch (Exception e) {
-                            __TYPEVALUE__ = "";
-                            thereIsStuffInLemma = false;
-                        }
-
-                        try {
-                            __VALUES__ = codes.getJsonObject(0).getString(labelValues);
-                            thereIsStuffInLemma = true;
-                        } catch (Exception e) {
-                            __VALUES__ = "";
-                            thereIsStuffInLemma = false;
-                        }
-
-                        try {
-                            PoS = codes.getJsonObject(0).getString(labelPos);
-                            thereIsStuffInLemma = true;
-                        } catch (Exception e) {
-                            PoS = "";
-                            thereIsStuffInLemma = false;
-                        }
-
-                        if (!__VALUES__.equals("")) {
-                            lemmamorphoanalysis = lemmamorphoanalysis + "\n" + __VALUES__;
-                        }
-
-                        if (!PoS.equals("")) {
-                            lemmamorphoanalysis = lemmamorphoanalysis + "\n" + PoS;
-                        }
-
-                        if (!__TYPEVALUE__.equals("")) {
-                            lemmamorphoanalysis = lemmamorphoanalysis + "\n" + __TYPEVALUE__;
-                        }
-
-                        if (!__CFVALUE__.equals("")) {
-                            lemmamorphoanalysis = lemmamorphoanalysis + "\n" + __CFVALUE__;
-                        }
-
-                        if (thereIsStuffInLemma) {
-                            TreeNode lemmacodes = new DefaultTreeNode(lemmamorphoanalysis, temp);
-
-                        }
-
-                        j++;
                     }
-
-                    nodeanalysis.getChildren().add(nodelemma);
-                    numLemmas = numLemmas + 1;
-                    //nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
+                    node.getChildren().add(nodeanalysis);
+                    i++;
                 }
-                node.getChildren().add(nodeanalysis);
-                i++;
             }
+        } else {
+            numFormNotFound = numFormNotFound + 1;
+            formsNotFound.add(obj.getString(labelInForm));
         }
 
         return node;
@@ -478,6 +519,7 @@ public class ContextMenuView implements Serializable {
     private TreeNode createListOfLemmas(JsonObject obj) {
 
         String labelAnalysis = "analyses";
+        String labelInForm = "input_wordform";
 
         String labelLemmas = "lemmas";
         String labelLemma = "lemma";
@@ -485,7 +527,9 @@ public class ContextMenuView implements Serializable {
         String labelMorfCodes = "morpho_codes";
         String labelLemType = "lem_type";
         String labelPos = "PoS";
+        String labelFound = "found";
         List<String> lemmafound = new ArrayList<String>();
+
         String PoS = "";
         String lemmapos = "";
 
@@ -497,59 +541,68 @@ public class ContextMenuView implements Serializable {
         String __LEMMA__ = "";
         String __LEMTYPE__ = "";
         //numLemmas=0;
-        if (node == null) {
+        if (obj.getString(labelFound).equals("true")) {
+            if (node == null) {
 
-            //add analysis as subnodes
-            JsonArray analyses = obj.getJsonArray(labelAnalysis);
-            int i = 0; // analysises
-            int j = 0; // lemmas
-            int totlemmas = 0;
-            for (JsonValue value : analyses) {
-                j = 0;
-                PoS = "";
-                lemmapos = "";
-                JsonObject objAnalyses = analyses.getJsonObject(i);
-                JsonArray lemmas = objAnalyses.getJsonArray(labelLemmas);
-                totlemmas = totlemmas + lemmas.size();
-                for (JsonValue lemma : lemmas) {
+                //add analysis as subnodes
+                JsonArray analyses = obj.getJsonArray(labelAnalysis);
+                int i = 0; // analysises
+                int j = 0; // lemmas
+                int totlemmas = 0;
+                for (JsonValue value : analyses) {
+                    j = 0;
+                    PoS = "";
+                    lemmapos = "";
+                    JsonObject objAnalyses = analyses.getJsonObject(i);
+                    JsonArray lemmas = objAnalyses.getJsonArray(labelLemmas);
+                    totlemmas = totlemmas + lemmas.size();
+                    for (JsonValue lemma : lemmas) {
 
-                    JsonObject objLemmas = lemmas.getJsonObject(j);
-                    __LEMMA__ = objLemmas.getString(labelLemma);
-                    __LEMTYPE__ = objLemmas.getString(labelLemType);
+                        JsonObject objLemmas = lemmas.getJsonObject(j);
+                        __LEMMA__ = objLemmas.getString(labelLemma);
+                        __LEMTYPE__ = objLemmas.getString(labelLemType);
 
-                    JsonArray codes = objLemmas.getJsonArray(labelMorfCodes);
-                    PoS = codes.getJsonObject(0).getString(labelPos);
-                    //System.err.println("\t\tJSON LEMMAS " + i + " " + lemma + " -" + PoS + "- ");
-                    if (lemmas.size() > 1) {
-                        if (__LEMTYPE__.equalsIgnoreCase("IPERLEMMA")) {
+                        JsonArray codes = objLemmas.getJsonArray(labelMorfCodes);
+                        PoS = codes.getJsonObject(0).getString(labelPos);
+                        //System.err.println("\t\tJSON LEMMAS " + i + " " + lemma + " -" + PoS + "- ");
+                        if (lemmas.size() > 1) {
+                            if (__LEMTYPE__.equalsIgnoreCase("IPERLEMMA")) {
+                                lemmapos = __LEMMA__ + " (" + PoS + ") ";
+                                if (!lemmafound.contains(lemmapos)) {
+                                    lemmafound.add(lemmapos);
+                                }
+
+                            } else {
+                                totlemmas = totlemmas - 1;
+                            }
+                        } else {
+
                             lemmapos = __LEMMA__ + " (" + PoS + ") ";
                             if (!lemmafound.contains(lemmapos)) {
                                 lemmafound.add(lemmapos);
                             }
+                            if (!globallemmafound.contains(lemmapos)) {
+                                globallemmafound.add(lemmapos);
+                            }
 
-                        } else {
-                            totlemmas = totlemmas - 1;
                         }
-                    } else {
 
-                        lemmapos = __LEMMA__ + " (" + PoS + ") ";
-                        if (!lemmafound.contains(lemmapos)) {
-                            lemmafound.add(lemmapos);
-                        }
+                        j++;
+
                     }
 
-                    j++;
-
+                    i++;
                 }
-
-                i++;
+                __LEMMAS__ = __LEMMAS__ + totlemmas + ") ";
+                numLemmas = numLemmas + lemmafound.size();
+                node = new DefaultTreeNode(__LEMMAS__);
+                for (String temp : lemmafound) {
+                    nodelemma = new DefaultTreeNode(temp, node);
+                }
             }
-            __LEMMAS__ = __LEMMAS__ + totlemmas + ") ";
-            numLemmas = numLemmas + lemmafound.size();
-            node = new DefaultTreeNode(__LEMMAS__);
-            for (String temp : lemmafound) {
-                nodelemma = new DefaultTreeNode(temp, node);
-            }
+        } else {
+            numFormNotFound = numFormNotFound + 1;
+            formsNotFound.add(obj.getString(labelInForm));
         }
 
         return node;
@@ -884,6 +937,78 @@ public class ContextMenuView implements Serializable {
      */
     public void setNumLemmas(int numLemmas) {
         this.numLemmas = numLemmas;
+    }
+
+    /**
+     * @return the numFormNotFound
+     */
+    public int getNumFormNotFound() {
+        return numFormNotFound;
+    }
+
+    /**
+     * @param numFormNotFound the numFormNotFound to set
+     */
+    public void setNumFormNotFound(int numFormNotFound) {
+        this.numFormNotFound = numFormNotFound;
+    }
+
+    /**
+     * @return the formsNotFound
+     */
+    public List<String> getFormsNotFound() {
+        return formsNotFound;
+    }
+
+    /**
+     * @param formsNotFound the formsNotFound to set
+     */
+    public void setFormsNotFound(List<String> formsNotFound) {
+        this.formsNotFound = formsNotFound;
+    }
+
+    /**
+     * @return the mainRootNotFound
+     */
+    public TreeNode getMainRootNotFound() {
+        return mainRootNotFound;
+    }
+
+    /**
+     * @param mainRootNotFound the mainRootNotFound to set
+     */
+    public void setMainRootNotFound(TreeNode mainRootNotFound) {
+        this.mainRootNotFound = mainRootNotFound;
+    }
+
+    /**
+     * @return the numGlobalLemmas
+     */
+    public int getNumGlobalLemmas() {
+        numGlobalLemmas = globallemmafound.size();
+        return numGlobalLemmas;
+    }
+
+    /**
+     * @param numGlobalLemmas the numGlobalLemmas to set
+     */
+    public void setNumGlobalLemmas(int numGlobalLemmas) {
+        this.numGlobalLemmas = numGlobalLemmas;
+    }
+
+    /**
+     * @return the numLemmatizedForm
+     */
+    public int getNumLemmatizedForm() {
+        numLemmatizedForm = numDistinctForm - numFormNotFound;
+        return numLemmatizedForm;
+    }
+
+    /**
+     * @param numLemmatizedForm the numLemmatizedForm to set
+     */
+    public void setNumLemmatizedForm(int numLemmatizedForm) {
+        this.numLemmatizedForm = numLemmatizedForm;
     }
 
 }
