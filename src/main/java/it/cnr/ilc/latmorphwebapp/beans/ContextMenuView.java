@@ -55,6 +55,9 @@ public class ContextMenuView implements Serializable {
     private TreeNode mainRoot;
     private List<TreeNode> roots = new ArrayList<>();
     private HashMap<String, Integer> occhm = new HashMap<>();
+    private int numForm = 0;
+    private int numDistinctForm = 0;
+    private int numLemmas = 0;
 
     /**
      * The typeOfAnalysis manages 3 check boxes to show the results in a bitmap
@@ -86,6 +89,7 @@ public class ContextMenuView implements Serializable {
      */
     public void lemmatizeFormAndCreateResponse() {
         TreeNode node = null;
+        setMainRoot(null);
         List<TreeNode> nodes = getRoots();
         typeOfAnalysis = getTypeOfAnalysis();
         String str = service.getSelectedTextInArea();
@@ -95,7 +99,11 @@ public class ContextMenuView implements Serializable {
         String[] args = new String[3];
         String[] words = str.split("\\s+");
         List<String> found = new ArrayList<>();
+        int occ = 0;
+        setNumForm(words.length);
         for (String a : words) {
+            a = cleanWord(a);
+
             args = new String[3];
             args[0] = flagword;
             args[1] = a;
@@ -107,16 +115,30 @@ public class ContextMenuView implements Serializable {
                 nodes.add(node);
 
                 found.add(a);
+
+                occhm.put(a, 1);
             } else {
                 System.err.println("Wordform " + a + " already lemmatized");
+                occ = occhm.get(a);
+                occhm.put(a, occ + 1);
+
             }
             //manageJsonResponse(getJson());
 
         }
+        setNumDistinctForm(found.size());
         setRoots(nodes);
 
         setMainRoot(createListOfNodes(nodes));
+        System.err.println("MAP " + occhm);
 
+    }
+
+    private String cleanWord(String word) {
+        System.err.println("word0 " + word);
+        word = word.replaceAll("[,.;?!]", "");//.replaceAll(";", "").replaceAll(".", "");
+        System.err.println("word1 " + word);
+        return word;
     }
 
     /**
@@ -128,7 +150,7 @@ public class ContextMenuView implements Serializable {
     private TreeNode createListOfNodes(List<TreeNode> nodes) {
 
         if (getMainRoot() == null) {
-            setMainRoot(new DefaultTreeNode("  Your Results  "));
+            setMainRoot(new DefaultTreeNode("  Your Results  " + numForm + "/" + numDistinctForm));
         }
         getMainRoot().getChildren().addAll(nodes);
         return getMainRoot();
@@ -257,6 +279,8 @@ public class ContextMenuView implements Serializable {
         int i = 0; // analyses
         int mc = 0; // morpho codes
         int j = 0; // lemmas
+        //int totLemmas = 0;
+        //numLemmas=0;
         /*create an array of analysis*/
         if (complete) {
             __FORMANALISYS__ = "Complete Results";
@@ -364,15 +388,19 @@ public class ContextMenuView implements Serializable {
                     String __LEMMAS__ = "Lemma(s)";
 
                     //TreeNode node = null;
-                    TreeNode nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
-
                     String __LEMMA__ = "";
                     String __LEMTYPE__ = "";
                     JsonArray lemmas = objAnalysis.getJsonArray(labelLemmas);
                     TreeNode temp = new DefaultTreeNode();
+                    TreeNode nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
+
                     for (JsonValue lemma : lemmas) {
+                        __LEMMAS__ = "Lemma (";
                         thereIsStuffInLemma = false;
                         lemmamorphoanalysis = "";
+//                        totLemmas = totLemmas + lemmas.size();
+//                        __LEMMAS__ = __LEMMAS__ + totLemmas + ") ";
+                        //nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
                         JsonObject objLemmas = lemmas.getJsonObject(j);
                         __LEMMA__ = objLemmas.getString(labelLemma);
                         __LEMTYPE__ = objLemmas.getString(labelLemType);
@@ -434,7 +462,9 @@ public class ContextMenuView implements Serializable {
 
                         j++;
                     }
+
                     nodeanalysis.getChildren().add(nodelemma);
+                    numLemmas = numLemmas + 1;
                     //nodelemma = new DefaultTreeNode(__LEMMAS__, nodeanalysis);
                 }
                 node.getChildren().add(nodeanalysis);
@@ -459,27 +489,30 @@ public class ContextMenuView implements Serializable {
         String PoS = "";
         String lemmapos = "";
 
-        String __LEMMAS__ = "Lemma(s)";
+        String __LEMMAS__ = "Lemma (";
 
         TreeNode node = null;
         TreeNode nodelemma = new DefaultTreeNode();
 
         String __LEMMA__ = "";
         String __LEMTYPE__ = "";
+        //numLemmas=0;
         if (node == null) {
-            node = new DefaultTreeNode(__LEMMAS__);
+
             //add analysis as subnodes
             JsonArray analyses = obj.getJsonArray(labelAnalysis);
             int i = 0; // analysises
             int j = 0; // lemmas
+            int totlemmas = 0;
             for (JsonValue value : analyses) {
                 j = 0;
                 PoS = "";
                 lemmapos = "";
                 JsonObject objAnalyses = analyses.getJsonObject(i);
                 JsonArray lemmas = objAnalyses.getJsonArray(labelLemmas);
-
+                totlemmas = totlemmas + lemmas.size();
                 for (JsonValue lemma : lemmas) {
+
                     JsonObject objLemmas = lemmas.getJsonObject(j);
                     __LEMMA__ = objLemmas.getString(labelLemma);
                     __LEMTYPE__ = objLemmas.getString(labelLemType);
@@ -494,8 +527,11 @@ public class ContextMenuView implements Serializable {
                                 lemmafound.add(lemmapos);
                             }
 
+                        } else {
+                            totlemmas = totlemmas - 1;
                         }
                     } else {
+
                         lemmapos = __LEMMA__ + " (" + PoS + ") ";
                         if (!lemmafound.contains(lemmapos)) {
                             lemmafound.add(lemmapos);
@@ -503,9 +539,14 @@ public class ContextMenuView implements Serializable {
                     }
 
                     j++;
+
                 }
+
                 i++;
             }
+            __LEMMAS__ = __LEMMAS__ + totlemmas + ") ";
+            numLemmas = numLemmas + lemmafound.size();
+            node = new DefaultTreeNode(__LEMMAS__);
             for (String temp : lemmafound) {
                 nodelemma = new DefaultTreeNode(temp, node);
             }
@@ -801,6 +842,48 @@ public class ContextMenuView implements Serializable {
      */
     public void setOcchm(HashMap<String, Integer> occhm) {
         this.occhm = occhm;
+    }
+
+    /**
+     * @return the numForm
+     */
+    public int getNumForm() {
+        return numForm;
+    }
+
+    /**
+     * @param numForm the numForm to set
+     */
+    public void setNumForm(int numForm) {
+        this.numForm = numForm;
+    }
+
+    /**
+     * @return the numDistinctForm
+     */
+    public int getNumDistinctForm() {
+        return numDistinctForm;
+    }
+
+    /**
+     * @param numDistinctForm the numDistinctForm to set
+     */
+    public void setNumDistinctForm(int numDistinctForm) {
+        this.numDistinctForm = numDistinctForm;
+    }
+
+    /**
+     * @return the numLemmas
+     */
+    public int getNumLemmas() {
+        return numLemmas;
+    }
+
+    /**
+     * @param numLemmas the numLemmas to set
+     */
+    public void setNumLemmas(int numLemmas) {
+        this.numLemmas = numLemmas;
     }
 
 }

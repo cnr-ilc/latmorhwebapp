@@ -56,36 +56,42 @@
 
 
             <h:form>              
-<!--                <p:fieldset legend="Insert your text" >-->
-                    <h:panelGrid columns="4" cellpadding="2" style="width: 100%;" border="0">
-                        <p:inputTextarea onselect="setSelectedText()" rows="6" value="#{searchPanelBean.textInArea}" style="width: 100%;" id="textarea">        
-                        </p:inputTextarea>           
-                        <p:remoteCommand name="setSelectedTextCommand" 
-                                         actionListener="#{searchPanelBean.setSelectedText()}"/>
-<!--                                         update="currentSelectedText" />-->
+                <!--                <p:fieldset legend="Insert your text" >-->
+                <h:panelGrid columns="4" cellpadding="2" style="width: 100%;" border="0">
+                    <p:inputTextarea onselect="setSelectedText()" rows="6" value="#{searchPanelBean.textInArea}" style="width: 100%;" id="textarea">        
+                    </p:inputTextarea>           
+                    <p:remoteCommand name="setSelectedTextCommand" 
+                                     actionListener="#{searchPanelBean.setSelectedText()}"
+                                     onstart="PF('loadingDialog').show()" oncomplete="PF('loadingDialog').hide();"
+                                     />
+
+                    <!--                                     update="currentSelectedText" />-->
 
 
-                        <h:panelGrid columns="1" cellpadding="1" border="0">
-                            <p:outputLabel for ="selection">Select the output format</p:outputLabel>
-                            <p:selectManyCheckbox id="selection" value="#{searchPanelBean.selectedOutputFormats}">
-                                <f:selectItem itemLabel="Complete" itemValue="4"/>
-                                <f:selectItem itemLabel="List of Lemmas" itemValue="2" />
-                                <f:selectItem itemLabel="Form Analysis" itemValue="1" />
+                    <h:panelGrid columns="1" cellpadding="1" border="0">
+                        <p:outputLabel for ="selection">Select the output format</p:outputLabel>
+                        <p:selectManyCheckbox id="selection" value="#{searchPanelBean.selectedOutputFormats}">
+                            <f:selectItem itemLabel="Complete" itemValue="4"/>
+                            <f:selectItem itemLabel="List of Lemmas" itemValue="2" />
+                            <f:selectItem itemLabel="Form Analysis" itemValue="1" />
 
-                            </p:selectManyCheckbox>
-                        </h:panelGrid>
-<!--                        <h:outputText value="Selected Text is #{searchPanelBean.selectedTextInArea}" 
-                                      id="currentSelectedText" />-->
-
-                        <script src="#{resource['flexibleArea.js']}" />
-                        <script src="#{resource['jquery-textrange.js']}" />
-                        <script>
-                            function setSelectedText() {
-                                var range = $('.ui-inputtextarea').textrange();// general selector
-                                setSelectedTextCommand([{name: 'selectedText', value: range.text}]);
-                            }
-                        </script>
+                        </p:selectManyCheckbox>
                     </h:panelGrid>
+                    <h:panelGrid columns="2" cellpadding="1" border="0" id="currentAnalysis">
+                                 <h:outputLabel for="nf" value="Number of Forms" /> <h:outputText value="#{contextMenuView.numForm}" id="nf"/>
+                                 <h:outputLabel for="ndf" value="Number of Distinct Forms" /> <h:outputText value="#{contextMenuView.numDistinctForm}" id="ndf"/>
+                                 <h:outputLabel for="nl" value="Number of Lemmas" /> <h:outputText value="#{contextMenuView.numLemmas}" id="nl"/>
+                    </h:panelGrid>
+
+                    <script src="#{resource['flexibleArea.js']}" />
+                    <script src="#{resource['jquery-textrange.js']}" />
+                    <script>
+                        function setSelectedText() {
+                            var range = $('.ui-inputtextarea').textrange();// general selector
+                            setSelectedTextCommand([{name: 'selectedText', value: range.text}]);
+                        }
+                    </script>
+                </h:panelGrid>
                 <!--</p:fieldset>-->
                 <p />
                 <!--                <p:fieldset legend="Your answer" style="margin-bottom:20px">
@@ -95,24 +101,28 @@
                 
                                     </h:panelGrid>
                                 </p:fieldset>-->
-<!--                <p:fieldset legend="Your answer" style="margin-bottom:20px">-->
-                    <h:panelGrid columns="1" cellpadding="2" style="width: 100%;" border="0">
-                        <p:tree value="#{contextMenuView.mainRoot}" var="node" orientation="horizontal" id="nodepanel" >
+                <!--                <p:fieldset legend="Your answer" style="margin-bottom:20px">-->
+                <h:panelGrid columns="1" cellpadding="2" style="width: 100%;" border="0">
+                    <p:tree value="#{contextMenuView.mainRoot}" var="node" orientation="horizontal" id="nodepanel" >
 
-                            <p:treeNode>
-                                <h:outputText value="#{node}" />
-                            </p:treeNode>
+                        <p:treeNode>
+                            <h:outputText value="#{node}" />
+                        </p:treeNode>
 
-                        </p:tree>
-                    </h:panelGrid>
+                    </p:tree>
+                </h:panelGrid>
                 <!--</p:fieldset>-->
 
 
                 <p:contextMenu for="textarea">
-                    <p:menuitem value="Lemmatize #{searchPanelBean.selectedTextInArea}" actionListener="#{contextMenuView.lemmatizeFormAndCreateResponse}"  icon="ui-icon-disk" update="nodepanel"/>
+                    <p:menuitem value="Lemmatize #{searchPanelBean.selectedTextInArea}" actionListener="#{contextMenuView.lemmatizeFormAndCreateResponse}"  icon="ui-icon-disk" update="nodepanel currentAnalysis"/>
 
                 </p:contextMenu>
             </h:form>
+            <p:dialog widgetVar="loadingDialog" styleClass="loadingDialog" modal="true" closable="false" resizable="false" header="...Lemmatizing...">
+                <p:outputLabel styleClass="loadingLabel" value="Loading"/>
+                <p:graphicImage styleClass="loadingImage" name="#{resource['waiting.gif']}"/>
+            </p:dialog>
 
 
             <!--            </p:layout>-->

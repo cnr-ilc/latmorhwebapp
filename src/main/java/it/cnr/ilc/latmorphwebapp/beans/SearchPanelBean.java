@@ -19,7 +19,6 @@ import javax.faces.context.FacesContext;
  */
 @ManagedBean(name = "searchPanelBean")
 @ViewScoped
-
 public class SearchPanelBean implements Serializable {
 
     private String selectedTextInArea = "";
