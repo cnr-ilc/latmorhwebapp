@@ -6,6 +6,8 @@
 package it.cnr.ilc.latmorphwebapp.beans;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
@@ -18,13 +20,15 @@ import javax.faces.context.FacesContext;
 @ManagedBean(name = "searchPanelBean")
 @ViewScoped
 
-public class SearchPanelBean implements Serializable{
+public class SearchPanelBean implements Serializable {
 
     private String selectedTextInArea = "";
     private String textInArea = "";
-    private int discontinuosSelection = 0;
-    private String response="";
-    
+
+    private String response = "";
+
+    private List<String> selectedOutputFormats = new ArrayList<String>();
+    private int outputmode = 4;
 
     public void setSelectedText() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -43,7 +47,6 @@ public class SearchPanelBean implements Serializable{
      * @param selectedTextInArea the selectedTextInArea to set
      */
     public void setSelectedTextInArea(String selectedTextInArea) {
-        
 
         this.selectedTextInArea = selectedTextInArea;
     }
@@ -63,20 +66,6 @@ public class SearchPanelBean implements Serializable{
     }
 
     /**
-     * @return the discontinuosSelection
-     */
-    public int getDiscontinuosSelection() {
-        return discontinuosSelection;
-    }
-
-    /**
-     * @param discontinuosSelection the discontinuosSelection to set
-     */
-    public void setDiscontinuosSelection(int discontinuosSelection) {
-        this.discontinuosSelection = discontinuosSelection;
-    }
-
-    /**
      * @return the response
      */
     public String getResponse() {
@@ -90,6 +79,42 @@ public class SearchPanelBean implements Serializable{
         this.response = response;
     }
 
-   
+    /**
+     * @return the selectedOutputFormats
+     */
+    public List<String> getSelectedOutputFormats() {
+        return selectedOutputFormats;
+    }
+
+    /**
+     * @param selectedOutputFormats the selectedOutputFormats to set
+     */
+    public void setSelectedOutputFormats(List<String> selectedOutputFormats) {
+        this.selectedOutputFormats = selectedOutputFormats;
+    }
+
+    /**
+     * @return the outputmode
+     */
+    public int getOutputmode() {
+        int myval = 0;
+        int ret=0;
+        for (String val : getSelectedOutputFormats()) {
+            myval = Integer.parseInt(val);
+            ret=ret+myval;
+        }
+        if(ret==0 || ret>=4)
+            ret=4;
+        outputmode=ret;
+        setSelectedOutputFormats(new ArrayList<String>());
+        return outputmode;
+    }
+
+    /**
+     * @param outputmode the outputmode to set
+     */
+    public void setOutputmode(int outputmode) {
+        this.outputmode = outputmode;
+    }
 
 }
