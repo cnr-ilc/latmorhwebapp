@@ -1,0 +1,15 @@
+DISTRIBUTION LICENCE 
+
+See the LEMLAT license at https://github.com/cnr-ilc/portinglemlatV1/blob/master/LICENSE.txt
+
+LEMLAT WEB APP 1.0 - A web application based on the Latin Lemmatizer and Morphological Analyzer LEMLAT 3.0 
+
+Copyright © 2016 
+-Istituto di Linguistica Computazionale “A. Zampolli”, CNR, Pisa Italy (CNR-ILC) 
+
+
+LEMLAT WEB APP 1.0 is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. 
+
+LEMLAT WEB APP 1.0 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
