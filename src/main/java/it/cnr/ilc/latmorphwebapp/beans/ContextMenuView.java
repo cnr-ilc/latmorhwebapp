@@ -63,6 +63,7 @@ public class ContextMenuView implements Serializable {
     private int numGlobalLemmas = 0;
     private int numFormNotFound = 0;
     private int numLemmatizedForm = 0;
+    private String header="";
     private List<String> formsNotFound = new ArrayList<>();
 
     /**
@@ -115,7 +116,8 @@ public class ContextMenuView implements Serializable {
             args[1] = a;
             args[2] = format;
             if (!found.contains(a)) {
-                System.err.println("Lemmatize wordform " + a);
+                //System.err.println("Lemmatize wordform " + a);
+                setHeader("Lemmatizing form # "+found.size()+" ("+a+")");
                 lemmatize(args);
                 node = readJsonResponse(getJson());
                 nodes.add(node);
@@ -124,7 +126,7 @@ public class ContextMenuView implements Serializable {
 
                 occhm.put(a, 1);
             } else {
-                System.err.println("Wordform " + a + " already lemmatized");
+                //System.err.println("Wordform " + a + " already lemmatized");
                 occ = occhm.get(a);
                 occhm.put(a, occ + 1);
 
@@ -137,7 +139,7 @@ public class ContextMenuView implements Serializable {
 
         setMainRoot(createListOfNodes(nodes));
         //System.err.println("MAP " + occhm);
-        System.err.println("GLOBAL " + globallemmafound);
+        //System.err.println("GLOBAL " + globallemmafound);
         setMainRootNotFound(createListOfNodesForNotFound(nodes));
 
     }
@@ -805,6 +807,7 @@ public class ContextMenuView implements Serializable {
 
                 wordform = null;
             }
+            lib.finalize(0);
 
         }
 
@@ -1009,6 +1012,20 @@ public class ContextMenuView implements Serializable {
      */
     public void setNumLemmatizedForm(int numLemmatizedForm) {
         this.numLemmatizedForm = numLemmatizedForm;
+    }
+
+    /**
+     * @return the header
+     */
+    public String getHeader() {
+        return header;
+    }
+
+    /**
+     * @param header the header to set
+     */
+    public void setHeader(String header) {
+        this.header = header;
     }
 
 }

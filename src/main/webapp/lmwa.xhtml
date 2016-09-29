@@ -58,14 +58,12 @@
             <h:form>              
                 <!--                <p:fieldset legend="Insert your text" >-->
                 <h:panelGrid columns="4" cellpadding="2" style="width: 100%;" border="0">
-                    <p:inputTextarea onselect="setSelectedText()" rows="6" value="#{searchPanelBean.textInArea}" style="width: 100%;" id="textarea">        
+                    <p:inputTextarea autoResize="false" onselect="setSelectedText()" rows="6" value="#{searchPanelBean.textInArea}" style="width: 100%;" id="textarea">        
                     </p:inputTextarea>           
                     <p:remoteCommand name="setSelectedTextCommand" 
-                                     actionListener="#{searchPanelBean.setSelectedText()}"
-
-                                     />
-
-                    <!--                                     update="currentSelectedText" />-->
+                                     actionListener="#{searchPanelBean.setSelectedText()}" />
+<!--                                     update="currentSelectedText someDialogHeader" -->
+<!--                                     />-->
 
 
                     <h:panelGrid columns="1" cellpadding="1" border="0">
@@ -125,6 +123,9 @@
                     </p:tree>
                 </h:panelGrid>
                 <!--</p:fieldset>-->
+<!--                Selected Text is: 
+                <h:outputText value="#{searchPanelBean.selectedTextInArea}" 
+                              id="currentSelectedText" />-->
 
 
                 <p:contextMenu for="textarea">
@@ -133,12 +134,16 @@
                                 icon="ui-icon-disk" update="nodepanel currentAnalysis nodepanelnf" onstart="PF('loadingDialog').show()" oncomplete="PF('loadingDialog').hide();"/>
 
                 </p:contextMenu>
-            </h:form>
-            <p:dialog widgetVar="loadingDialog" styleClass="loadingDialog" modal="true" closable="false" resizable="false" header="...Lemmatizing...">
-                <p:outputLabel styleClass="loadingLabel" value="Loading"/>
-                <p:graphicImage styleClass="loadingImage" name="#{resource['waiting.gif']}"/>
-            </p:dialog>
 
+                <p:dialog widgetVar="loadingDialog" styleClass="loadingDialog" modal="true" closable="false" resizable="false" header="Lemmatizing, please wait"> 
+                    <f:facet name="header">
+                        <h:outputText id="someDialogHeader" value="#{contextMenuView.header}"/>
+                    </f:facet>
+
+                    <p:outputLabel styleClass="loadingLabel" value="Loading"/>
+                    <p:graphicImage styleClass="loadingImage" name="#{resource['waiting.gif']}"/>
+                </p:dialog>
+            </h:form>
 
             <!--            </p:layout>-->
             <div class="lindat-common lindat-footer" data-version="1.2.1" data-build="cb4a575a4a0d79069d929d03ecc632ef794f330f">
