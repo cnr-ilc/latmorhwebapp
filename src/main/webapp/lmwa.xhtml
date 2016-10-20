@@ -57,16 +57,19 @@
 
             <h:form>              
                 <!--                <p:fieldset legend="Insert your text" >-->
+                <h4><h:outputText value="Write your text in the textarea, then select the portion 
+                                  you want to analyze. Use the contextual menu (right-click) to execute the lemmatization" /></h4>
+
                 <h:panelGrid columns="4" cellpadding="2" style="width: 100%;" border="0">
                     <p:inputTextarea autoResize="false" onselect="setSelectedText()" rows="6" value="#{searchPanelBean.textInArea}" style="width: 100%;" id="textarea">        
                     </p:inputTextarea>           
                     <p:remoteCommand name="setSelectedTextCommand" 
                                      actionListener="#{searchPanelBean.setSelectedText()}" />
-<!--                                     update="currentSelectedText someDialogHeader" -->
-<!--                                     />-->
+                    <!--                                     update="currentSelectedText someDialogHeader" -->
+                    <!--                                     />-->
 
 
-                    <h:panelGrid columns="1" cellpadding="1" border="0">
+                    <h:panelGrid columns="2" cellpadding="1" border="0">
                         <p:outputLabel for ="selection">Select the output format</p:outputLabel>
                         <p:selectManyCheckbox id="selection" value="#{searchPanelBean.selectedOutputFormats}">
                             <f:selectItem itemLabel="Complete" itemValue="4"/>
@@ -74,6 +77,10 @@
                             <f:selectItem itemLabel="Form Analysis" itemValue="1" />
 
                         </p:selectManyCheckbox>
+
+                        <p:commandButton value="View" type="button" onclick="PF('dlg1').show();" disabled="#{contextMenuView.show}" id="btnView"/>
+
+
                     </h:panelGrid>
                     <h:panelGrid columns="2" cellpadding="3" border="0" id="currentAnalysis" >
                         <h:outputLabel for="nf" value="Number of Forms: "  /> <h:outputText value="#{contextMenuView.numForm}" id="nf"/>
@@ -87,10 +94,10 @@
                     <script src="#{resource['flexibleArea.js']}" />
                     <script src="#{resource['jquery-textrange.js']}" />
                     <script>
-                        function setSelectedText() {
-                            var range = $('.ui-inputtextarea').textrange();// general selector
-                            setSelectedTextCommand([{name: 'selectedText', value: range.text}]);
-                        }
+                            function setSelectedText() {
+                                var range = $('.ui-inputtextarea').textrange();// general selector
+                                setSelectedTextCommand([{name: 'selectedText', value: range.text}]);
+                            }
                     </script>
                 </h:panelGrid>
                 <!--</p:fieldset>-->
@@ -123,25 +130,38 @@
                     </p:tree>
                 </h:panelGrid>
                 <!--</p:fieldset>-->
-<!--                Selected Text is: 
-                <h:outputText value="#{searchPanelBean.selectedTextInArea}" 
-                              id="currentSelectedText" />-->
+                <!--                Selected Text is: 
+                                <h:outputText value="#{searchPanelBean.selectedTextInArea}" 
+                                              id="currentSelectedText" />-->
 
 
                 <p:contextMenu for="textarea">
                     <p:menuitem value="Lemmatize #{searchPanelBean.selectedTextInArea}" 
                                 actionListener="#{contextMenuView.lemmatizeFormAndCreateResponse}"  
-                                icon="ui-icon-disk" update="nodepanel currentAnalysis nodepanelnf" onstart="PF('loadingDialog').show()" oncomplete="PF('loadingDialog').hide();"/>
+                                icon="ui-icon-disk" update="nodepanel currentAnalysis nodepanelnf btnView responseta" onstart="PF('loadingDialog').show()" oncomplete="PF('loadingDialog').hide();"/>
 
                 </p:contextMenu>
 
                 <p:dialog widgetVar="loadingDialog" styleClass="loadingDialog" modal="true" closable="false" resizable="false" header="Lemmatizing, please wait"> 
-                    <f:facet name="header">
-                        <h:outputText id="someDialogHeader" value="#{contextMenuView.header}"/>
-                    </f:facet>
+                    <!--                    <f:facet name="header">
+                                            <h:outputText id="someDialogHeader" value="#{contextMenuView.header}"/>
+                                        </f:facet>-->
 
                     <p:outputLabel styleClass="loadingLabel" value="Loading"/>
                     <p:graphicImage styleClass="loadingImage" name="#{resource['waiting.gif']}"/>
+                </p:dialog>
+
+                <p:dialog header="Json Response" widgetVar="dlg1"  height="600px" modal="true" width="900px" resizable="false">
+
+                    <p:fieldset legend="Ctrl+C to copy" style="margin-bottom:20px">
+                        <h:panelGrid columns="1" cellpadding="2" style="width: 80%;">
+                            <p:inputTextarea  rows="20" value="#{contextMenuView.theResponse}" style="width: 100%;" id="responseta" 
+                                              autoResize="false">        
+                            </p:inputTextarea>           
+
+                        </h:panelGrid>
+                    </p:fieldset>
+                    <!--                <p:fieldset legend="Your answer" style="margin-bottom:20px">-->
                 </p:dialog>
             </h:form>
 

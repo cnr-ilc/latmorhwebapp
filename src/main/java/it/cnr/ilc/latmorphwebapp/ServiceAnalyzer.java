@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.cnr.ilc.latmorphwebapp.beans;
+package it.cnr.ilc.latmorphwebapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -29,9 +29,6 @@ import java.sql.Connection;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -48,12 +45,11 @@ import javax.json.JsonObjectBuilder;
  *
  * @author Riccardo Del Gratta &lt;riccardo.delgratta@ilc.cnr.it&gt;
  */
-@ManagedBean(name = "contextMenuView")
 
-public class ContextMenuView implements Serializable {
 
-    @ManagedProperty("#{searchPanelBean}")
-    private SearchPanelBean service;
+public class ServiceAnalyzer implements Serializable {
+
+    
     private String json;
     private TreeNode root;
     private TreeNode mainRoot;
@@ -86,78 +82,8 @@ public class ContextMenuView implements Serializable {
      */
     private int typeOfAnalysis = 4;
 
-    @PostConstruct
-    public void init() {
-//        TreeNode node=new DefaultTreeNode("init");
-//        List<TreeNode> nodes = getRoots();
-//        nodes.add(node);
-//        setRoots(nodes);
-        service.setSelectedOutputFormats(new ArrayList<String>());
-        service.setTextInArea("");
-        setShow(show);
-        //setTypeOfAnalysis(4);
+   
 
-    }
-
-    /**
-     * takes the form and
-     */
-    public void lemmatizeFormAndCreateResponse() {
-        setShow(true);
-        TreeNode node = null;
-        setMainRoot(null);
-        List<TreeNode> nodes = getRoots();
-
-        typeOfAnalysis = getTypeOfAnalysis();
-        //System.err.println(" typeOfAnalysis " + typeOfAnalysis);
-        String str = service.getSelectedTextInArea();
-        String flagword = "+w";
-        String flagfile = "+f";
-        String format = "+j";
-        String[] args = new String[3];
-        String[] words = str.split("\\s+");
-        List<String> found = new ArrayList<>();
-        int occ = 0;
-        setNumForm(words.length);
-        for (String a : words) {
-            a = cleanWord(a);
-
-            args = new String[3];
-            args[0] = flagword;
-            args[1] = a;
-            args[2] = format;
-            if (!found.contains(a)) {
-                //System.err.println("Lemmatize wordform " + a);
-                setHeader("Lemmatizing form # " + found.size() + " (" + a + ")");
-                lemmatize(args);
-                node = readJsonResponse(getJson());
-                nodes.add(node);
-
-                found.add(a);
-
-                occhm.put(a, 1);
-
-            } else {
-                //System.err.println("Wordform " + a + " already lemmatized");
-                occ = occhm.get(a);
-                occhm.put(a, occ + 1);
-
-            }
-            //manageJsonResponse(getJson());
-
-        }
-        setNumDistinctForm(found.size());
-        setRoots(nodes);
-
-        setMainRoot(createListOfNodes(nodes));
-        //System.err.println("MAP " + occhm);
-        //System.err.println("GLOBAL " + globallemmafound);
-        setMainRootNotFound(createListOfNodesForNotFound(nodes));
-        setShow(false);
-
-        returnJson(createTheResponse(getJsons()));
-
-    }
     
     public void lemmatizeFormAndCreateResponseForServices(String wordswithsep) {
         setShow(true);
@@ -165,8 +91,8 @@ public class ContextMenuView implements Serializable {
         setMainRoot(null);
         List<TreeNode> nodes = getRoots();
 
-        typeOfAnalysis = getTypeOfAnalysis();
-        System.err.println(" SERVICES "+wordswithsep);
+        
+        //System.err.println(" SERVICES "+wordswithsep);
         String str = wordswithsep; //service.getSelectedTextInArea();
         String flagword = "+w";
         String flagfile = "+f";
@@ -185,7 +111,7 @@ public class ContextMenuView implements Serializable {
             args[2] = format;
             if (!found.contains(a)) {
                 //System.err.println("Lemmatize wordform " + a);
-                setHeader("Lemmatizing form # " + found.size() + " (" + a + ")");
+                //setHeader("Lemmatizing form # " + found.size() + " (" + a + ")");
                 lemmatize(args);
                 node = readJsonResponse(getJson());
                 nodes.add(node);
@@ -218,7 +144,7 @@ public class ContextMenuView implements Serializable {
 
     private String cleanWord(String word) {
         //System.err.println("word0 " + word);
-        word = word.replaceAll("[,.;?!]", "");//.replaceAll(";", "").replaceAll(".", "");
+        word = word.replaceAll("[,.;?!\\s]", "");//.replaceAll(";", "").replaceAll(".", "");
         //System.err.println("word1 " + word);
         return word;
     }
@@ -833,7 +759,7 @@ public class ContextMenuView implements Serializable {
 //                            pobw.flush();
 //                            pubw.flush();
                             setJson(returnanalyses.getTheresponse());
-                            service.setResponse(returnanalyses.getTheresponse());
+                            
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -986,19 +912,7 @@ public class ContextMenuView implements Serializable {
         //pobw.flush();
     }
 
-    /**
-     * @return the service
-     */
-    public SearchPanelBean getService() {
-        return service;
-    }
-
-    /**
-     * @param service the service to set
-     */
-    public void setService(SearchPanelBean service) {
-        this.service = service;
-    }
+    
 
     /**
      * @return the json
@@ -1014,13 +928,7 @@ public class ContextMenuView implements Serializable {
         this.json = json;
     }
 
-    /**
-     * @return the typeOfAnalysis
-     */
-    public int getTypeOfAnalysis() {
-        typeOfAnalysis = service.getOutputmode();
-        return typeOfAnalysis;
-    }
+    
 
     /**
      * @param typeOfAnalysis the typeOfAnalysis to set
