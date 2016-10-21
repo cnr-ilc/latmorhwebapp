@@ -11,8 +11,11 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PUT;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -25,8 +28,8 @@ public class ServiceResource {
 
     @Context
     private UriInfo context;
-    
-    private ServiceAnalyzer analyzer= new ServiceAnalyzer();
+
+    private ServiceAnalyzer analyzer = new ServiceAnalyzer();
 
 //    @ManagedProperty("#{ContextMenuView}")
 //    private ContextMenuView service;
@@ -58,8 +61,6 @@ public class ServiceResource {
     public void putHtml(String content) {
     }
 
-    
-
     @GET
     @Path("/complete")
     @Produces("application/json")
@@ -68,11 +69,33 @@ public class ServiceResource {
         String word = info.getQueryParameters().getFirst("word");
         analyzer.lemmatizeFormAndCreateResponseForServices(word);
 
+        return analyzer.getTheResponse(); //Response
+
+    }
+    
+    @GET
+    @Path("/complete/{word}")
+    @Produces("application/json")
+    public String getTest(@PathParam("word") String word) {
+
+        //String word = info.getQueryParameters().getFirst("word");
+        analyzer.lemmatizeFormAndCreateResponseForServices(word);
 
         return analyzer.getTheResponse(); //Response
-        
 
     }
 
-    
+    @POST
+    @Path("/post")
+    public String create(@QueryParam("word") String word){
+        
+        analyzer.lemmatizeFormAndCreateResponseForServices(word);
+
+        return analyzer.getTheResponse(); //Response
+        
+    }
+
+//    @Path("/")
+//    public void redirect() {
+//    }
 }
