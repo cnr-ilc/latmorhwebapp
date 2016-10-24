@@ -40,9 +40,12 @@ import javax.json.JsonValue;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 import it.cnr.ilc.jauceps.app.utils.OutFormat;
+import java.util.Enumeration;
 import java.util.HashMap;
+import javax.faces.context.FacesContext;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -156,9 +159,19 @@ public class ContextMenuView implements Serializable {
         setShow(false);
 
         returnJson(createTheResponse(getJsons()));
+        System.err.println("SESSION " + FacesContext.getCurrentInstance().getExternalContext().getSessionMap());
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(true);
+        Enumeration e = session.getAttributeNames();
+        while (e.hasMoreElements()) {
+            String attr = (String) e.nextElement();
+            System.err.println("      attr  = " + attr);
+            Object value = session.getAttribute(attr); //session.getValue(attr); 
+            System.err.println("      value = " + value);
+        }
 
     }
-    
+
     public void lemmatizeFormAndCreateResponseForServices(String wordswithsep) {
         setShow(true);
         TreeNode node = null;
@@ -166,7 +179,7 @@ public class ContextMenuView implements Serializable {
         List<TreeNode> nodes = getRoots();
 
         typeOfAnalysis = getTypeOfAnalysis();
-        System.err.println(" SERVICES "+wordswithsep);
+        System.err.println(" SERVICES " + wordswithsep);
         String str = wordswithsep; //service.getSelectedTextInArea();
         String flagword = "+w";
         String flagfile = "+f";
