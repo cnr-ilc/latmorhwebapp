@@ -2,7 +2,7 @@ DISTRIBUTION LICENCE
 
 See the LEMLAT license at https://github.com/cnr-ilc/portinglemlatV1/blob/master/LICENSE.txt
 
-LEMLAT WEB APP 1.0 - A web application based on the Latin Lemmatizer and Morphological Analyzer LEMLAT 3.0 
+LEMLAT WEB APP 1.0 - A web application based on the porting of the Latin Lemmatizer LEMLAT 2.0 
 
 Copyright © 2016 
 -Istituto di Linguistica Computazionale “A. Zampolli”, CNR, Pisa Italy (CNR-ILC) 
