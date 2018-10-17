@@ -23,7 +23,7 @@ import javax.ws.rs.core.MediaType;
  *
  * @author Riccardo Del Gratta &lt;riccardo.delgratta@ilc.cnr.it&gt;
  */
-@Path("services")
+@Path("/")
 public class ServiceResource {
 
     @Context

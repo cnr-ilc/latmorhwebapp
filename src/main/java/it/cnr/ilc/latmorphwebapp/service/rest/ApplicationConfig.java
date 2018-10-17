@@ -12,7 +12,7 @@ import javax.ws.rs.core.Application;
  *
  * @author Riccardo Del Gratta &lt;riccardo.delgratta@ilc.cnr.it&gt;
  */
-@javax.ws.rs.ApplicationPath("")
+@javax.ws.rs.ApplicationPath("services")
 public class ApplicationConfig extends Application {
 
     @Override
